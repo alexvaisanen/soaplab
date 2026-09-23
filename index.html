@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Soap Lab Ledger</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #EDE7D6;
+  --paper-2: #E2DBC7;
+  --ink: #1F3A2E;
+  --ink-soft: #3E5347;
+  --amber: #B8802E;
+  --amber-deep: #8F5F1D;
+  --olive: #6B7A4A;
+  --clay: #A8462B;
+  --line: rgba(31,58,46,0.18);
+  --card: #F5F1E4;
+  --good: #4C7A44;
+  --warn: #B8802E;
+  --bad: #A8462B;
+  --font-display: 'Fraunces', serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+  color-scheme: light;
+}
+:root[data-theme="dark"], :root:not([data-theme="light"]) {
+  @media (prefers-color-scheme: dark) {
+    --paper: #16201A;
+    --paper-2: #1C271F;
+    --ink: #EDE7D6;
+    --ink-soft: #BFCABE;
+    --card: #1C271F;
+    --line: rgba(237,231,214,0.16);
+    --amber: #D9A24B;
+    --olive: #93A874;
+    --clay: #D98866;
+    color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  background-image:
+    linear-gradient(var(--line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--line) 1px, transparent 1px);
+  background-size: 28px 28px;
+  background-position: -1px -1px;
+}
+a { color: var(--amber-deep); }
+
+.wrap { max-width: 1180px; margin: 0 auto; padding: 0 20px 80px; }
+
+header.top {
+  border-bottom: 2px solid var(--ink);
+  padding: 28px 20px 18px;
+  margin-bottom: 6px;
+}
+header.top .inner { max-width: 1180px; margin: 0 auto; display: flex; align-items: baseline; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
+h1.brand {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(28px, 4vw, 40px);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+h1.brand small {
+  display: block;
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 13px;
+  color: var(--ink-soft);
+  margin-top: 4px;
+}
+.stat-strip { display: flex; gap: 26px; font-family: var(--font-mono); font-size: 13px; color: var(--ink-soft); }
+.stat-strip b { display: block; font-family: var(--font-display); font-size: 22px; color: var(--ink); font-weight: 600; }
+
+nav.tabs {
+  display: flex;
+  gap: 2px;
+  margin: 22px 0 20px;
+  border-bottom: 1px solid var(--line);
+  overflow-x: auto;
+}
+nav.tabs button {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 14.5px;
+  background: none;
+  border: none;
+  color: var(--ink-soft);
+  padding: 10px 16px 12px;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  white-space: nowrap;
+}
+nav.tabs button.active { color: var(--ink); border-bottom-color: var(--amber); }
+nav.tabs button:hover { color: var(--ink); }
+
+.panel { display: none; }
+.panel.active { display: block; }
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  padding: 20px;
+  margin-bottom: 16px;
+}
+.card h2 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 20px;
+  margin: 0 0 4px;
+}
+.card .sub { color: var(--ink-soft); font-size: 13.5px; margin: 0 0 16px; max-width: 62ch; }
+
+.row { display: flex; gap: 14px; flex-wrap: wrap; }
+.field { display: flex; flex-direction: column; gap: 5px; min-width: 120px; }
+.field label { font-size: 12px; color: var(--ink-soft); font-weight: 600; }
+.field input, .field select {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  padding: 8px 9px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  color: var(--ink);
+}
+.field input[type="text"], .field input[type="date"] { font-family: var(--font-body); }
+
+table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+th { text-align: left; font-size: 11.5px; text-transform: none; color: var(--ink-soft); font-weight: 600; padding: 6px 8px; border-bottom: 1px solid var(--ink); }
+td { padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+td input, td select { width: 100%; font-family: var(--font-mono); font-size: 13px; padding: 5px 6px; border: 1px solid var(--line); background: var(--paper); color: var(--ink); }
+.tbl-wrap { overflow-x: auto; }
+tr.readonly td { color: var(--ink-soft); }
+.num { font-family: var(--font-mono); text-align: right; }
+
+button.btn {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 13.5px;
+  padding: 8px 14px;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+  cursor: pointer;
+}
+button.btn.secondary { background: transparent; color: var(--ink); }
+button.btn.warn { background: var(--clay); border-color: var(--clay); color: #fff; }
+button.btn.small { padding: 4px 9px; font-size: 12px; }
+button.btn:hover { opacity: 0.85; }
+
+.grid2 { display: grid; grid-template-columns: 1.3fr 1fr; gap: 16px; }
+@media (max-width: 860px) { .grid2 { grid-template-columns: 1fr; } }
+
+.result-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(140px,1fr)); gap: 12px; margin-top: 6px;}
+.result-tile { border: 1px solid var(--line); padding: 12px; background: var(--paper); }
+.result-tile .lbl { font-size: 11.5px; color: var(--ink-soft); font-weight: 600; }
+.result-tile .val { font-family: var(--font-mono); font-size: 20px; margin-top: 4px; }
+
+.bar-row { display: grid; grid-template-columns: 140px 1fr 60px; align-items: center; gap: 10px; margin-bottom: 8px; }
+.bar-row .name { font-size: 13px; font-weight: 600; }
+.bar-track { position: relative; height: 14px; background: var(--paper); border: 1px solid var(--line); }
+.bar-range { position: absolute; top: 0; bottom: 0; background: rgba(107,122,74,0.28); }
+.bar-fill { position: absolute; top: 3px; bottom: 3px; width: 3px; background: var(--ink); }
+.bar-val { font-family: var(--font-mono); font-size: 12px; text-align: right; }
+.tag { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 7px; border: 1px solid currentColor; }
+.tag.good { color: var(--good); }
+.tag.warn { color: var(--warn); }
+.tag.bad { color: var(--bad); }
+
+.batch-card { border: 1px solid var(--line); padding: 14px; margin-bottom: 10px; background: var(--paper); }
+.batch-card h3 { font-family: var(--font-display); margin: 0 0 4px; font-size: 17px; }
+.batch-meta { font-family: var(--font-mono); font-size: 12px; color: var(--ink-soft); margin-bottom: 8px; }
+.log-add-row { display: flex; gap: 8px; align-items: flex-end; margin-top: 10px; flex-wrap: wrap; }
+.empty { color: var(--ink-soft); font-size: 13.5px; padding: 10px 0; }
+.footnote { font-size: 12px; color: var(--ink-soft); margin-top: 8px; }
+select#recipeOilPicker { max-width: 260px; }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="inner">
+    <h1 class="brand">Soap Lab Ledger<small>Ingredient prices &middot; lye calculator &middot; process log — school-lab scale soap making</small></h1>
+    <div class="stat-strip" id="statStrip"></div>
+  </div>
+</header>
+
+<div class="wrap">
+  <nav class="tabs">
+    <button data-tab="ingredients" class="active">Ingredients &amp; prices</button>
+    <button data-tab="recipe">Recipe &amp; lye calculator</button>
+    <button data-tab="process">Process log</button>
+    <button data-tab="batches">Saved batches</button>
+    <button data-tab="safety">Safety &amp; methods</button>
+    <button data-tab="refs">References</button>
+  </nav>
+
+  <!-- INGREDIENTS -->
+  <section class="panel active" id="panel-ingredients">
+    <div class="card">
+      <h2>Ingredient prices</h2>
+      <p class="sub">Common oils come pre-loaded with typical saponification values. Enter what your store actually charges — update this whenever prices change, it feeds every cost calculation below.</p>
+      <div class="tbl-wrap">
+        <table id="ingredientTable">
+          <thead>
+            <tr>
+              <th>Ingredient</th><th>Type</th><th>Store</th><th>Price</th><th>Unit</th><th>Updated</th><th>NaOH SAP</th><th></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="log-add-row">
+        <button class="btn secondary small" id="addIngredientBtn">+ add ingredient</button>
+        <span class="footnote">SAP = grams of NaOH to fully saponify 1g of that fat. Only needed for oils/fats, not essential oils or lye.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- RECIPE -->
+  <section class="panel" id="panel-recipe">
+    <div class="card">
+      <h2>Batch setup</h2>
+      <p class="sub">Set the batch size and lye method, then build the oil blend below. Everything recalculates live.</p>
+      <div class="row">
+        <div class="field"><label>Total oil weight (g)</label><input type="number" id="totalOilWeight" value="2000" min="1"></div>
+        <div class="field"><label>Superfat / lye discount %</label><input type="number" id="superfat" value="5" min="0" max="20" step="0.5"></div>
+        <div class="field"><label>Lye type</label><select id="lyeType"><option value="naoh">NaOH (bar soap)</option><option value="koh">KOH (liquid soap)</option></select></div>
+        <div class="field"><label>Lye concentration %</label><input type="number" id="lyeConc" value="33" min="20" max="50" step="1"></div>
+        <div class="field"><label># of bars / units</label><input type="number" id="numBars" value="20" min="1"></div>
+        <div class="field"><label>Lye liquid</label>
+          <select id="liquidType">
+            <option value="water">Water</option>
+            <option value="beer">Beer concentrate (reduced beer)</option>
+            <option value="other">Other liquid</option>
+          </select>
+        </div>
+        <div class="field"><label>Cost basis</label>
+          <select id="schoolSupplied">
+            <option value="yes">School supplies lye &amp; beer (free)</option>
+            <option value="no">I'm paying for lye &amp; beer too</option>
+          </select>
+        </div>
+      </div>
+      <p class="footnote" id="liquidWarning"></p>
+    </div>
+    <div class="card">
+      <button class="btn secondary small" id="loadPresetBtn">Load example: Opinpolku 11 — beer soap (school lab recipe)</button>
+      <span class="footnote">Loads the 143 g cold-process recipe from the Opinpolku 11 lab sheet: coconut fat, hardened vegetable fat, olive oil and rapeseed oil, with beer concentrate in place of water.</span>
+    </div>
+
+    <div class="card">
+      <h2>Oil blend</h2>
+      <p class="sub">Percentages should add to 100% of total oil weight.</p>
+      <div class="tbl-wrap">
+        <table id="recipeTable">
+          <thead><tr><th>Oil</th><th>% of oils</th><th>Weight (g)</th><th>Cost</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="log-add-row">
+        <select id="recipeOilPicker"></select>
+        <button class="btn secondary small" id="addRecipeOilBtn">+ add oil to blend</button>
+        <span id="pctWarning" class="footnote"></span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Fragrance / essential oil</h2>
+      <div class="row">
+        <div class="field"><label>Essential oil</label><select id="eoPicker"></select></div>
+        <div class="field"><label>Rate (g per kg of oils)</label><input type="number" id="eoRate" value="20" min="0" step="1"></div>
+      </div>
+      <p class="footnote">Vanilla and vanilla-containing fragrances brown over time (the vanillin reacts and darkens the bar) — worth knowing since beer soap already tends to go tan/brown on its own from the malt sugars reacting with lye. Citrus oils smell bright at first but fade fastest in cold process and can speed up trace; pine is sturdier but strong, so start low (5–10 g/kg) and adjust.</p>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <h2>Results</h2>
+        <div class="result-grid" id="resultGrid"></div>
+        <p class="footnote" id="costFootnote"></p>
+      </div>
+      <div class="card">
+        <h2>Predicted bar qualities</h2>
+        <p class="sub">Weighted from the oil blend. The shaded band is the typical target range.</p>
+        <div id="qualityBars"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Save this recipe as a batch</h2>
+      <div class="row">
+        <div class="field" style="flex:1; min-width:220px;"><label>Batch name</label><input type="text" id="newBatchName" placeholder="e.g. Beer Soap – Sept 23"></div>
+        <div class="field"><label>Date</label><input type="date" id="newBatchDate"></div>
+      </div>
+      <div style="margin-top:12px;"><button class="btn" id="saveBatchBtn">Save batch &amp; start process log</button></div>
+    </div>
+  </section>
+
+  <!-- PROCESS -->
+  <section class="panel" id="panel-process">
+    <div class="card">
+      <h2>Active batch</h2>
+      <div class="row">
+        <div class="field" style="flex:1; min-width:220px;"><label>Select batch to log</label><select id="processBatchPicker"></select></div>
+      </div>
+    </div>
+    <div id="processDetail"></div>
+  </section>
+
+  <!-- BATCHES -->
+  <section class="panel" id="panel-batches">
+    <div class="card">
+      <h2>Saved batches</h2>
+      <div id="batchList"></div>
+    </div>
+  </section>
+
+  <!-- SAFETY & METHODS -->
+  <section class="panel" id="panel-safety">
+    <div class="card">
+      <h2>Sodium hydroxide (NaOH) — hazard information</h2>
+      <p class="sub">GHS classification and precautionary statements, as used on the Opinpolku 11 lab safety sheet (also see the product's own safety data sheet / käyttöturvallisuustiedote).</p>
+      <table>
+        <tbody>
+          <tr><td style="width:90px"><strong>H314</strong></td><td>Voimakkaasti ihoa syövyttävää ja silmiä vaurioittavaa. <span style="color:var(--ink-soft)">— Causes severe skin burns and eye damage.</span></td></tr>
+          <tr><td><strong>P280</strong></td><td>Käytä suojakäsineitä/suojavaatetusta/silmiensuojainta/kasvonsuojainta. <span style="color:var(--ink-soft)">— Wear protective gloves/clothing/eye protection/face protection.</span></td></tr>
+          <tr><td><strong>P303+P361+P353</strong></td><td>JOS KEMIKAALIA JOUTUU IHOLLE (tai hiuksiin): Riisu saastunut vaatetus välittömästi. Huuhdo iho vedellä tai suihkuta. <span style="color:var(--ink-soft)">— IF ON SKIN (or hair): Remove contaminated clothing immediately. Rinse skin with water/shower.</span></td></tr>
+          <tr><td><strong>P304+P340</strong></td><td>JOS KEMIKAALIA ON HENGITETTY: Siirrä henkilö raittiiseen ilmaan ja varmista vaivaton hengitys. <span style="color:var(--ink-soft)">— IF INHALED: Remove to fresh air and keep comfortable for breathing.</span></td></tr>
+          <tr><td><strong>P305+P351+P338</strong></td><td>JOS KEMIKAALIA JOUTUU SILMIIN: Huuhdo huolellisesti vedellä usean minuutin ajan. Poista mahdolliset piilolinssit, jos sen voi tehdä helposti. Jatka huuhtomista. <span style="color:var(--ink-soft)">— IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses if present and easy to do. Continue rinsing.</span></td></tr>
+          <tr><td><strong>P310</strong></td><td>Ota välittömästi yhteys MYRKYTYSTIETOKESKUKSEEN/lääkäriin. <span style="color:var(--ink-soft)">— Immediately call a POISON CENTER/doctor.</span></td></tr>
+        </tbody>
+      </table>
+      <p class="footnote">Finland / poison information: Myrkytystietokeskus, tel. 0800 147 111 (24h). Always read the product's own safety data sheet before handling lye.</p>
+    </div>
+
+    <div class="card">
+      <h2>General lab safety notes</h2>
+      <p class="sub">Summarised from Nikupeteri (2010) chapters 3.4 &amp; 6.1 — the fuller discussion is worth reading directly.</p>
+      <ul>
+        <li>Lye is the biggest risk in the room: always add lye to liquid, never liquid to lye, and mix it in a lidded heatproof container so fumes stay contained.</li>
+        <li>Wear gloves, goggles and long sleeves whenever lye or unsaponified ("raw") soap is being handled — raw soap is milder than lye solution but still caustic enough to irritate skin.</li>
+        <li>Weigh oils and lye accurately — a gram or two of error in a small lab-scale batch shifts the superfat percentage a lot more than it would in a large batch.</li>
+        <li>Keep a lidded container or spill mat handy, and know where the nearest eyewash/sink is before you start.</li>
+        <li>Rather than testing cure with a "tongue test" on raw soap (as some older guides suggest), use pH strips — a cured bar should read roughly pH 8–10; anything sharply higher likely still has unreacted lye in it.</li>
+        <li>Fragrance oils belong on the "check before use" list too: only use ones sold for skin/soap use with an available safety data sheet, and watch for oils that accelerate trace or overheat the batch.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>Method notes (for the Process log)</h2>
+      <p class="sub">Rough temperature and trace expectations for each method, drawn from Nikupeteri (2010) chapter 4.2 and the author's own trial batches — treat as a starting point, since results vary with recipe and equipment.</p>
+      <table>
+        <thead><tr><th>Method</th><th>Typical temps</th><th>Trace / notes</th></tr></thead>
+        <tbody>
+          <tr><td>Cold process</td><td>Oils and lye solution both around 40–50°C when combined</td><td>No further heating — saponification finishes over the following weeks. Trace can take minutes (stick blender) to over an hour (hand-stirred); insulating the mould speeds up gel.</td></tr>
+          <tr><td>Hot process — water bath</td><td>Bath at a low boil (~100°C); mass itself around 70–90°C</td><td>Most even and predictable of the hot methods. Bringing the batter to trace before it goes in the bath makes the cook faster and more reliable.</td></tr>
+          <tr><td>Hot process — oven</td><td>Oven at 90–100°C</td><td>Similar to a water bath but easier to scorch if the oven runs hot; check every 15–20 minutes.</td></tr>
+          <tr><td>Hot process — direct heat</td><td>Low simmer on the stovetop</td><td>Fastest but least predictable — stir constantly and watch for scorching; the batch separates and re-emulsifies a few times before it's done.</td></tr>
+          <tr><td>Traditional boiling</td><td>Rolling boil for 30–90+ min, then salted out</td><td>Uses lye in excess, then separates finished soap from spent liquid (glycerin, salt, water) by salting. Produces a firmer, more industrial-feeling bar.</td></tr>
+          <tr><td>Melt &amp; pour</td><td>Melt base at ~60–70°C (double boiler or microwave)</td><td>No lye handling — saponification already done in the base. Re-melts and cools quickly, good for layering/swirling.</td></tr>
+          <tr><td>Rebatch</td><td>Grated soap + a little water, melted at ~70–90°C</td><td>For rescuing a batch or reworking a bar — expect a rougher, less glossy finish than a first-generation soap.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- REFERENCES -->
+  <section class="panel" id="panel-refs">
+    <div class="card">
+      <h2>Sources used in this tool</h2>
+      <p class="sub">The recipe logic, method notes and safety guidance draw on the following — full bibliography kept for reference.</p>
+      <ul style="line-height:1.7">
+        <li>Nikupeteri, P. (2010). <em>Saippuan valmistuksen eri menetelmät ja niiden ohjauksellisuus.</em> Bachelor's thesis, Hämeen ammattikorkeakoulu (HAMK), Ohjaustoiminnan koulutusohjelma, Lahdensivu.</li>
+        <li>Opinpolku No 11: <em>Olutsaippuan valmistaminen</em> / <em>Saippuan valmistaminen</em> — school lab worksheets.</li>
+        <li><a href="http://saippuakuplia.tripod.com/valmistus.htm" target="_blank" rel="noopener">saippuakuplia.tripod.com/valmistus.htm</a></li>
+        <li>SaipTerapia: <a href="https://saipterapia.blogspot.com/p/blog-page_27.html" target="_blank" rel="noopener">Saippuan reseptit</a></li>
+      </ul>
+      <h2 style="margin-top:22px;">Full bibliography (Nikupeteri, 2010)</h2>
+      <ul style="line-height:1.7; columns: 2; column-gap: 24px;">
+        <li>Ade S. 2009. Self-Sufficiency Soap Making. London: New Holland Publishers.</li>
+        <li>Algol Chemicals Oy 2009. Käyttöturvallisuustiedote. Natriumhydroksidi (Lipeäkivi).</li>
+        <li>Anttila P. 1996. Tutkimisen taito ja tiedon hankinta. Helsinki: Akatiimi Oy.</li>
+        <li>Anttila P. 1992. Käsityön ja muotoilun teoreettiset perusteet. Porvoo: WSOY.</li>
+        <li>Bramson A. 1975. Soap. Making it Enjoying it. New York: Workman Publishing Company, Inc.</li>
+        <li>Coss M. 1998. The Handmade Soap Book. London: New Holland Publishers (UK) Ltd.</li>
+        <li>Dermoshop 2010. Dermosil-palasaippuat valmistetaan käsityönä Vaasassa.</li>
+        <li>Grosso A. 2007. The Everything Soapmaking Book, 2nd ed. Avon, MA: Adams Media.</li>
+        <li>Hart H, Craine L.E. &amp; Hart D.J. 2003. Organic Chemistry, a Short Course, 11th ed. Boston: Houghton Mifflin.</li>
+        <li>Heikkilä T. 1988. Saippuasta nykyaikaisiin pesuaineisiin. Helsinki: Tekniikan museo.</li>
+        <li>Hirsjärvi S, Remes P. &amp; Sajavaara P. 2005. Tutki ja kirjoita. Helsinki: Tammi.</li>
+        <li>Kauneutesi ei haihdu, Teka-Havi Oy:n mainosoriginaaleja. 2005. Riihimäen kaupunginmuseon julkaisu.</li>
+        <li>Koistinen M. 2008. Palasaippuasta tuli arjen luksustuote. HS.fi 6.8.2008.</li>
+        <li>Kuha S. 2006. Käsin tehtyä saippuaa. Helsinki: Art House Oy.</li>
+        <li>Lahtinen R. 2006. Saippuaa! Puhtauden ja kauneuden historiaa mainoksissa. Jyväskylä: Atena Kustannus Oy.</li>
+        <li>RSPO 2010. Who is RSPO? rspo.org</li>
+        <li>Työturvallisuuslaki 738/2002 (TTurvL).</li>
+        <li>Vilkka H. 2006. Tutki ja havainnoi. Helsinki: Tammi.</li>
+        <li>Watson A.L. 2007. Smart Soapmaking. Olympia, WA: Shepard Publications.</li>
+      </ul>
+      <p class="footnote">Related sites mentioned in the thesis: The Dish Forum (thedishforum.com) · Kotitekoinen saippua -foorumi (kotisaippua.info) · SoapCalc Lye Calculator (soapcalc.net) · Soapnuts (soapnuts.com) · Teach Soap (teachsoap.com).</p>
+    </div>
+  </section>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+// ---------- storage helpers ----------
+function load(key, fallback){
+  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
+  catch(e){ return fallback; }
+}
+function save(key, val){
+  try { localStorage.setItem(key, JSON.stringify(val)); } catch(e){}
+}
+
+// ---------- default ingredient library ----------
+// SAP values (g NaOH per g oil) and 0-100 property scores are typical published
+// reference figures for soap-making oils; treat as a starting estimate and
+// adjust to match your own batch results.
+function defaultIngredients(){
+  return [
+    {id:"olive", name:"Olive oil", type:"oil", unit:"kg", price:0, store:"", updated:"", sap:0.134, hardness:16, cleansing:0, conditioning:93, bubbly:0, creamy:19, iodine:85, ins:109},
+    {id:"coconut", name:"Coconut oil", type:"oil", unit:"kg", price:0, store:"", updated:"", sap:0.183, hardness:79, cleansing:67, conditioning:10, bubbly:67, creamy:15, iodine:10, ins:258},
+    {id:"palm", name:"Palm oil", type:"oil", unit:"kg", price:0, store:"", updated:"", sap:0.141, hardness:50, cleansing:1, conditioning:49, bubbly:1, creamy:49, iodine:53, ins:145},
+    {id:"castor", name:"Castor oil", type:"oil", unit:"kg", price:0, store:"", updated:"", sap:0.1286, hardness:0, cleansing:0, conditioning:90, bubbly:90, creamy:0, iodine:86, ins:95},
+    {id:"shea", name:"Shea butter", type:"oil", unit:"kg", price:0, store:"", updated:"", sap:0.128, hardness:44, cleansing:0, conditioning:55, bubbly:4, creamy:40, iodine:59, ins:116},
+    {id:"cocoa", name:"Cocoa butter", type:"oil", unit:"kg", price:0, store:"", updated:"", sap:0.137, hardness:63, cleansing:0, conditioning:31, bubbly:3, creamy:60, iodine:37, ins:157},
+    {id:"sunflower", name:"Sunflower oil", type:"oil", unit:"kg", price:0, store:"", updated:"", sap:0.1265, hardness:8, cleansing:0, conditioning:92, bubbly:0, creamy:14, iodine:119, ins:92},
+    {id:"canola", name:"Canola / rapeseed oil", type:"oil", unit:"kg", price:0, store:"", updated:"", sap:0.1244, hardness:14, cleansing:0, conditioning:84, bubbly:0, creamy:18, iodine:100, ins:56},
+    {id:"almond", name:"Sweet almond oil", type:"oil", unit:"kg", price:0, store:"", updated:"", sap:0.136, hardness:10, cleansing:0, conditioning:90, bubbly:0, creamy:16, iodine:97, ins:97},
+    {id:"avocado", name:"Avocado oil", type:"oil", unit:"kg", price:0, store:"", updated:"", sap:0.133, hardness:13, cleansing:0, conditioning:87, bubbly:0, creamy:15, iodine:86, ins:99},
+    {id:"ricebran", name:"Rice bran oil", type:"oil", unit:"kg", price:0, store:"", updated:"", sap:0.128, hardness:18, cleansing:0, conditioning:79, bubbly:1, creamy:27, iodine:100, ins:79},
+    {id:"tallow", name:"Beef tallow", type:"oil", unit:"kg", price:0, store:"", updated:"", sap:0.142, hardness:55, cleansing:2, conditioning:42, bubbly:3, creamy:46, iodine:45, ins:147},
+    {id:"kokki", name:"Hardened vegetable fat (e.g. \"Kokki\")", type:"oil", unit:"kg", price:0, store:"", updated:"", sap:0.142, hardness:45, cleansing:15, conditioning:45, bubbly:12, creamy:40, iodine:55, ins:140},
+    {id:"naoh", name:"Sodium hydroxide (lye)", type:"lye", unit:"kg", price:0, store:"", updated:"", sap:null},
+    {id:"koh", name:"Potassium hydroxide (lye)", type:"lye", unit:"kg", price:0, store:"", updated:"", sap:null},
+    {id:"eo_lavender", name:"Lavender essential oil", type:"eo", unit:"g", price:0, store:"", updated:""},
+    {id:"eo_teatree", name:"Tea tree essential oil", type:"eo", unit:"g", price:0, store:"", updated:""},
+    {id:"eo_peppermint", name:"Peppermint essential oil", type:"eo", unit:"g", price:0, store:"", updated:""},
+    {id:"eo_lime", name:"Lime essential oil", type:"eo", unit:"g", price:0, store:"", updated:""},
+    {id:"eo_citrus", name:"Citrus essential oil (orange/lemon/grapefruit)", type:"eo", unit:"g", price:0, store:"", updated:""},
+    {id:"eo_vanilla", name:"Vanilla fragrance oil (synthetic — no true vanilla EO exists)", type:"eo", unit:"g", price:0, store:"", updated:""},
+    {id:"eo_chocolate", name:"Chocolate/cocoa fragrance oil (synthetic)", type:"eo", unit:"g", price:0, store:"", updated:""},
+    {id:"eo_pine", name:"Pine (needle) essential oil", type:"eo", unit:"g", price:0, store:"", updated:""},
+    {id:"malt", name:"Malt grounds (texture additive)", type:"additive", unit:"g", price:0, store:"", updated:""},
+    {id:"beer", name:"Beer concentrate (reduced beer, replaces water)", type:"additive", unit:"ml", price:0, store:"", updated:""}
+  ];
+}
+
+let ingredients = load("soaplab_ingredients", null) || defaultIngredients();
+let batches = load("soaplab_batches", []);
+let recipeBlend = []; // {ingId, pct}
+
+function persistIngredients(){ save("soaplab_ingredients", ingredients); }
+function persistBatches(){ save("soaplab_batches", batches); }
+
+function fmt(n, d){ if(n===null||n===undefined||isNaN(n)) return "–"; return Number(n).toLocaleString(undefined,{minimumFractionDigits:d===undefined?1:d, maximumFractionDigits:d===undefined?1:d}); }
+function uid(){ return Math.random().toString(36).slice(2,10); }
+
+// ---------- tabs ----------
+document.querySelectorAll("nav.tabs button").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    document.querySelectorAll("nav.tabs button").forEach(b=>b.classList.remove("active"));
+    document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById("panel-"+btn.dataset.tab).classList.add("active");
+    if(btn.dataset.tab==="process") renderProcessTab();
+    if(btn.dataset.tab==="batches") renderBatchList();
+  });
+});
+
+// ---------- ingredients tab ----------
+function renderIngredientTable(){
+  const tbody = document.querySelector("#ingredientTable tbody");
+  tbody.innerHTML = "";
+  ingredients.forEach(ing=>{
+    const tr = document.createElement("tr");
+    const isOil = ing.type==="oil";
+    tr.innerHTML = `
+      <td><input data-f="name" type="text" value="${escapeHtml(ing.name)}" style="min-width:170px"></td>
+      <td>
+        <select data-f="type">
+          <option value="oil" ${ing.type==="oil"?"selected":""}>Oil / fat</option>
+          <option value="lye" ${ing.type==="lye"?"selected":""}>Lye</option>
+          <option value="eo" ${ing.type==="eo"?"selected":""}>Essential oil</option>
+          <option value="additive" ${ing.type==="additive"?"selected":""}>Additive</option>
+        </select>
+      </td>
+      <td><input data-f="store" type="text" value="${escapeHtml(ing.store||"")}" placeholder="store" style="min-width:110px"></td>
+      <td><input data-f="price" type="number" step="0.01" min="0" value="${ing.price||0}" style="width:80px"></td>
+      <td>
+        <select data-f="unit">
+          <option value="kg" ${ing.unit==="kg"?"selected":""}>per kg</option>
+          <option value="L" ${ing.unit==="L"?"selected":""}>per L</option>
+          <option value="g" ${ing.unit==="g"?"selected":""}>per g</option>
+          <option value="ml" ${ing.unit==="ml"?"selected":""}>per ml</option>
+        </select>
+      </td>
+      <td><input data-f="updated" type="date" value="${ing.updated||""}" style="width:140px"></td>
+      <td><input data-f="sap" type="number" step="0.0001" min="0" value="${ing.sap!==null&&ing.sap!==undefined?ing.sap:""}" ${isOil?"":"disabled"} style="width:80px"></td>
+      <td><button class="btn warn small" data-del="${ing.id}">remove</button></td>
+    `;
+    tbody.appendChild(tr);
+    tr.querySelectorAll("[data-f]").forEach(el=>{
+      el.addEventListener("input", ()=>{
+        const f = el.dataset.f;
+        let v = el.value;
+        if(f==="price"||f==="sap") v = v===""?null:parseFloat(v);
+        ing[f]=v;
+        if(f==="type"){ renderIngredientTable(); }
+        persistIngredients();
+        refreshOilPickers();
+        renderRecipe();
+      });
+    });
+    tr.querySelector("[data-del]").addEventListener("click", ()=>{
+      ingredients = ingredients.filter(i=>i.id!==ing.id);
+      recipeBlend = recipeBlend.filter(r=>r.ingId!==ing.id);
+      persistIngredients();
+      renderIngredientTable();
+      refreshOilPickers();
+      renderRecipe();
+    });
+  });
+  updateStatStrip();
+}
+function escapeHtml(s){ return (s||"").replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+
+document.getElementById("addIngredientBtn").addEventListener("click", ()=>{
+  ingredients.push({id:"custom_"+uid(), name:"New ingredient", type:"oil", unit:"kg", price:0, store:"", updated:"", sap:0.14, hardness:0,cleansing:0,conditioning:0,bubbly:0,creamy:0,iodine:0,ins:0});
+  persistIngredients();
+  renderIngredientTable();
+  refreshOilPickers();
+});
+
+// ---------- recipe tab ----------
+function refreshOilPickers(){
+  const oilPicker = document.getElementById("recipeOilPicker");
+  const eoPicker = document.getElementById("eoPicker");
+  const oils = ingredients.filter(i=>i.type==="oil" && !recipeBlend.some(r=>r.ingId===i.id));
+  oilPicker.innerHTML = oils.map(o=>`<option value="${o.id}">${escapeHtml(o.name)}</option>`).join("") || `<option value="">no more oils</option>`;
+  const eos = ingredients.filter(i=>i.type==="eo");
+  eoPicker.innerHTML = `<option value="">none</option>` + eos.map(o=>`<option value="${o.id}">${escapeHtml(o.name)}</option>`).join("");
+}
+document.getElementById("addRecipeOilBtn").addEventListener("click", ()=>{
+  const sel = document.getElementById("recipeOilPicker");
+  if(!sel.value) return;
+  recipeBlend.push({ingId: sel.value, pct: 0});
+  refreshOilPickers();
+  renderRecipe();
+});
+
+document.getElementById("loadPresetBtn").addEventListener("click", ()=>{
+  const needed = ["coconut","kokki","olive","canola"];
+  needed.forEach(id=>{ if(!ingredients.some(i=>i.id===id)){
+    // restore from defaults if it was removed
+    const def = defaultIngredients().find(d=>d.id===id);
+    if(def) ingredients.push(def);
+  }});
+  persistIngredients();
+  renderIngredientTable();
+  recipeBlend = [
+    {ingId:"coconut", pct:20},
+    {ingId:"kokki", pct:30},
+    {ingId:"olive", pct:30},
+    {ingId:"canola", pct:20}
+  ];
+  document.getElementById("totalOilWeight").value = 143;
+  document.getElementById("superfat").value = 5;
+  document.getElementById("lyeType").value = "naoh";
+  document.getElementById("lyeConc").value = 28;
+  document.getElementById("liquidType").value = "beer";
+  document.getElementById("eoRate").value = 0;
+  refreshOilPickers();
+  document.getElementById("eoPicker").value = "";
+  renderRecipe();
+  alert("Loaded the Opinpolku 11 beer-soap recipe (143 g fats, NaOH, beer concentrate in place of water). Reduce a beer to about half its volume by boiling, chill it hard, then use it as the lye liquid — add lye slowly, it foams. Malt grounds (0.5–1 g) are optional, for texture.");
+});
+
+function lyeIngredientFor(type){
+  return ingredients.find(i=>i.id===type) || null;
+}
+function unitPriceInGrams(ing){
+  // returns price per gram, given the ingredient's stored unit
+  if(!ing || !ing.price) return 0;
+  if(ing.unit==="kg" || ing.unit==="L") return ing.price/1000;
+  return ing.price; // g or ml already
+}
+
+function renderRecipe(){
+  const tbody = document.querySelector("#recipeTable tbody");
+  tbody.innerHTML = "";
+  const totalOil = parseFloat(document.getElementById("totalOilWeight").value)||0;
+  const pctSum = recipeBlend.reduce((s,r)=>s+ (parseFloat(r.pct)||0), 0);
+  let totalOilCost = 0;
+  let weightedSap = 0;
+
+  recipeBlend.forEach(r=>{
+    const ing = ingredients.find(i=>i.id===r.ingId);
+    if(!ing) return;
+    const weight = totalOil * (r.pct/100);
+    const cost = weight/1000 * (ing.unit==="kg"||ing.unit==="L" ? ing.price : ing.price*1000);
+    totalOilCost += cost;
+    weightedSap += (ing.sap||0) * (r.pct/100);
+
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${escapeHtml(ing.name)}</td>
+      <td><input type="number" step="0.1" min="0" max="100" value="${r.pct}" style="width:70px" data-pct></td>
+      <td class="num">${fmt(weight,0)} g</td>
+      <td class="num">${fmt(cost,2)}</td>
+      <td><button class="btn secondary small" data-remove>remove</button></td>
+    `;
+    tbody.appendChild(tr);
+    tr.querySelector("[data-pct]").addEventListener("input", (e)=>{
+      r.pct = parseFloat(e.target.value)||0;
+      renderRecipe();
+    });
+    tr.querySelector("[data-remove]").addEventListener("click", ()=>{
+      recipeBlend = recipeBlend.filter(x=>x!==r);
+      refreshOilPickers();
+      renderRecipe();
+    });
+  });
+
+  const warn = document.getElementById("pctWarning");
+  if(recipeBlend.length===0){
+    warn.textContent = "Add oils to the blend to begin.";
+  } else if(Math.abs(pctSum-100)>0.5){
+    warn.textContent = `Percentages total ${fmt(pctSum,1)}% — adjust to 100%.`;
+    warn.style.color = "var(--clay)";
+  } else {
+    warn.textContent = `Percentages total ${fmt(pctSum,1)}%.`;
+    warn.style.color = "var(--good)";
+  }
+
+  computeResults(totalOil, weightedSap, totalOilCost, pctSum);
+  refreshOilPickers();
+}
+
+function computeResults(totalOil, weightedSap, totalOilCost, pctSum){
+  const superfat = parseFloat(document.getElementById("superfat").value)||0;
+  const lyeType = document.getElementById("lyeType").value;
+  const lyeConc = parseFloat(document.getElementById("lyeConc").value)||33;
+  const numBars = parseFloat(document.getElementById("numBars").value)||1;
+  const eoId = document.getElementById("eoPicker").value;
+  const eoRate = parseFloat(document.getElementById("eoRate").value)||0;
+
+  let pureLye = totalOil * weightedSap * (1-superfat/100);
+  if(lyeType==="koh") pureLye = pureLye * 1.403; // NaOH-to-KOH SAP conversion factor
+  const water = pureLye>0 ? pureLye*((100/lyeConc)-1) : 0;
+  const lyeIng = lyeIngredientFor(lyeType);
+  const schoolSupplied = document.getElementById("schoolSupplied").value === "yes";
+  let lyeCost = pureLye/1000 * (lyeIng ? (lyeIng.unit==="kg"?lyeIng.price:lyeIng.price*1000) : 0);
+  if(schoolSupplied) lyeCost = 0;
+
+  const eoIng = ingredients.find(i=>i.id===eoId);
+  const eoGrams = eoRate * (totalOil/1000);
+  const eoCost = eoIng ? eoGrams * (eoIng.unit==="g"||eoIng.unit==="ml" ? eoIng.price : eoIng.price/1000) : 0;
+
+  const liquidType = document.getElementById("liquidType").value;
+  const liquidWarning = document.getElementById("liquidWarning");
+  let liquidCost = 0;
+  if(liquidType==="beer"){
+    const beerIng = ingredients.find(i=>i.id==="beer");
+    liquidCost = beerIng ? water * (beerIng.unit==="g"||beerIng.unit==="ml" ? beerIng.price : beerIng.price/1000) : 0;
+    if(schoolSupplied) liquidCost = 0;
+    liquidWarning.innerHTML = "Beer reacts with lye and can foam up vigorously &mdash; reduce the beer to about half its volume by boiling, chill it hard (an ice-cube tray works well) before mixing, and add the lye in small increments while stirring.";
+    liquidWarning.style.color = "var(--clay)";
+  } else if(liquidType==="other"){
+    liquidWarning.textContent = "Using a non-water liquid: check compatibility with lye and reduce/cool it the same way as water before mixing.";
+    liquidWarning.style.color = "var(--amber-deep)";
+  } else {
+    liquidWarning.textContent = "";
+  }
+
+  const totalOilCostVal = totalOilCost;
+  const grandTotal = totalOilCostVal + lyeCost + eoCost + liquidCost;
+  const totalBatchWeight = totalOil + pureLye + water + eoGrams;
+
+  const grid = document.getElementById("resultGrid");
+  const tiles = [
+    ["Total oil weight", fmt(totalOil,0)+" g"],
+    [lyeType==="koh"?"KOH needed":"NaOH needed", fmt(pureLye,1)+" g"],
+    ["Water needed", fmt(water,1)+" g"],
+    ["Fragrance / EO", fmt(eoGrams,1)+" g"],
+    ["Total batch weight", fmt(totalBatchWeight,0)+" g"],
+    ["Oil cost", fmt(totalOilCostVal,2)],
+    ["Lye cost", fmt(lyeCost,2)],
+    ["Liquid cost", fmt(liquidCost,2)],
+    ["Fragrance cost", fmt(eoCost,2)],
+    ["Total batch cost", fmt(grandTotal,2)],
+    ["Cost per bar/unit", fmt(grandTotal/numBars,2)],
+  ];
+  grid.innerHTML = tiles.map(t=>`<div class="result-tile"><div class="lbl">${t[0]}</div><div class="val">${t[1]}</div></div>`).join("");
+  document.getElementById("costFootnote").textContent =
+    pctSum && Math.abs(pctSum-100)>0.5 ? "Note: oil percentages don't total 100% yet — figures above will shift once they do." :
+    schoolSupplied ? "Lye and beer are treated as free (school-supplied) — only oils and fragrance count toward cost. Switch \"Cost basis\" above if that changes." :
+    "Costs use whatever prices are entered in Ingredients & prices — leave a price at 0 to exclude it from cost.";
+
+  renderQuality(totalOil);
+  window.__lastRecipeResult = {totalOil, pureLye, water, lyeType, lyeConc, superfat, eoGrams, eoId, grandTotal, numBars, totalBatchWeight};
+}
+
+const METHODS = ["Cold process","Hot process — water bath","Hot process — oven","Hot process — direct heat","Traditional boiling","Melt & pour","Rebatch"];
+const METHOD_NOTES = {
+  "Cold process": "No further heating needed — combine oils and lye solution around 40–50°C, mix to trace, pour and insulate the mould. Saponification finishes over the next few weeks.",
+  "Hot process — water bath": "Bring to trace first, then hold in a simmering water bath (~100°C bath, 70–90°C mass) until it passes a pH-strip test — usually 45–90 minutes.",
+  "Hot process — oven": "Bring to trace, then cook at 90–100°C, checking every 15–20 min. Watch for scorching if your oven runs hot.",
+  "Hot process — direct heat": "Fastest but least predictable — keep on a low simmer, stir constantly, expect the batch to separate and re-emulsify a few times before it's done.",
+  "Traditional boiling": "Boil oils, water and an excess of lye 30–90+ minutes, then salt out to separate finished soap from the spent liquid.",
+  "Melt & pour": "No lye handling — melt a pre-made base at ~60–70°C, add fragrance/colour, pour and cool.",
+  "Rebatch": "Grate the soap, add a little water, melt gently at ~70–90°C until smooth, then re-mould."
+};
+const QUALITY_RANGES = {
+  hardness:[29,54], cleansing:[12,22], conditioning:[44,69], bubbly:[14,46], creamy:[16,48], iodine:[41,70], ins:[136,165]
+};
+const QUALITY_LABELS = {hardness:"Hardness", cleansing:"Cleansing", conditioning:"Conditioning", bubbly:"Bubbly lather", creamy:"Creamy lather", iodine:"Iodine (softness/shelf life)", ins:"INS (overall balance)"};
+
+function renderQuality(totalOil){
+  const box = document.getElementById("qualityBars");
+  if(recipeBlend.length===0){ box.innerHTML = `<p class="empty">Add oils to see predicted qualities.</p>`; return; }
+  const totals = {hardness:0,cleansing:0,conditioning:0,bubbly:0,creamy:0,iodine:0,ins:0};
+  let pctSum = 0;
+  recipeBlend.forEach(r=>{
+    const ing = ingredients.find(i=>i.id===r.ingId);
+    if(!ing) return;
+    const w = (r.pct||0)/100;
+    pctSum += r.pct||0;
+    Object.keys(totals).forEach(k=> totals[k]+= (ing[k]||0)*w);
+  });
+  const norm = pctSum>0 ? 100/pctSum : 1; // normalize even if % doesn't sum to 100 yet
+  let html = "";
+  Object.keys(totals).forEach(k=>{
+    const val = totals[k]*norm;
+    const [lo,hi] = QUALITY_RANGES[k];
+    const maxScale = k==="ins" ? 260 : 100;
+    const pctPos = Math.min(100, (val/maxScale)*100);
+    const rangeLeft = (lo/maxScale)*100, rangeRight = (hi/maxScale)*100;
+    const inRange = val>=lo && val<=hi;
+    const tagClass = inRange ? "good" : (val<lo? "warn":"bad");
+    const tagText = inRange ? "in range" : (val<lo? "low":"high");
+    html += `<div class="bar-row">
+      <div class="name">${QUALITY_LABELS[k]}</div>
+      <div class="bar-track"><div class="bar-range" style="left:${rangeLeft}%;width:${rangeRight-rangeLeft}%;"></div><div class="bar-fill" style="left:${pctPos}%;"></div></div>
+      <div class="bar-val">${fmt(val,0)} <span class="tag ${tagClass}">${tagText}</span></div>
+    </div>`;
+  });
+  box.innerHTML = html;
+}
+
+["totalOilWeight","superfat","lyeType","lyeConc","numBars","eoPicker","eoRate","liquidType","schoolSupplied"].forEach(id=>{
+  document.getElementById(id).addEventListener("input", renderRecipe);
+  document.getElementById(id).addEventListener("change", renderRecipe);
+});
+
+// ---------- save batch ----------
+document.getElementById("saveBatchBtn").addEventListener("click", ()=>{
+  const name = document.getElementById("newBatchName").value.trim() || ("Batch "+ new Date().toLocaleDateString());
+  const date = document.getElementById("newBatchDate").value || new Date().toISOString().slice(0,10);
+  if(recipeBlend.length===0){ alert("Add at least one oil to the blend first."); return; }
+  const r = window.__lastRecipeResult || {};
+  const batch = {
+    id: "batch_"+uid(),
+    name, date,
+    blend: JSON.parse(JSON.stringify(recipeBlend)),
+    settings: {
+      totalOilWeight: document.getElementById("totalOilWeight").value,
+      superfat: document.getElementById("superfat").value,
+      lyeType: document.getElementById("lyeType").value,
+      lyeConc: document.getElementById("lyeConc").value,
+      numBars: document.getElementById("numBars").value,
+      eoId: document.getElementById("eoPicker").value,
+      eoRate: document.getElementById("eoRate").value,
+      liquidType: document.getElementById("liquidType").value,
+      schoolSupplied: document.getElementById("schoolSupplied").value
+    },
+    computed: r,
+    status: "mixing",
+    method: "Cold process",
+    lyeTemps: [], oilTemps: [],
+    traceTime: "", pourTemp: "", mold: "",
+    unmoldDate: "", cureStartDate: date, cureDays: 42,
+    notes: ""
+  };
+  batches.push(batch);
+  persistBatches();
+  document.getElementById("newBatchName").value = "";
+  alert(`Saved "${name}". Open it from the Process log tab to start tracking temperatures.`);
+  renderBatchList();
+});
+
+// ---------- process log ----------
+function renderProcessTab(){
+  const picker = document.getElementById("processBatchPicker");
+  picker.innerHTML = batches.length ? batches.map(b=>`<option value="${b.id}">${escapeHtml(b.name)} — ${b.date}</option>`).join("") : `<option value="">no saved batches yet</option>`;
+  renderProcessDetail(picker.value);
+}
+document.getElementById("processBatchPicker").addEventListener("change", (e)=> renderProcessDetail(e.target.value));
+
+function renderProcessDetail(batchId){
+  const box = document.getElementById("processDetail");
+  const b = batches.find(x=>x.id===batchId);
+  if(!b){ box.innerHTML = `<p class="empty">Save a batch from the Recipe tab, then select it here to log temperatures and cure dates.</p>`; return; }
+
+  const cureReady = addDays(b.cureStartDate, parseInt(b.cureDays||42,10));
+  box.innerHTML = `
+    <div class="card">
+      <h2>${escapeHtml(b.name)}</h2>
+      <div class="row">
+        <div class="field"><label>Status</label>
+          <select id="pStatus">
+            <option value="mixing" ${b.status==="mixing"?"selected":""}>Mixing / pour</option>
+            <option value="curing" ${b.status==="curing"?"selected":""}>Curing</option>
+            <option value="ready" ${b.status==="ready"?"selected":""}>Ready</option>
+          </select>
+        </div>
+        <div class="field"><label>Method</label>
+          <select id="pMethod">
+            ${METHODS.map(m=>`<option value="${m}" ${b.method===m?"selected":""}>${m}</option>`).join("")}
+          </select>
+        </div>
+        <div class="field"><label>Trace time (min)</label><input type="number" id="pTrace" value="${b.traceTime||""}" min="0"></div>
+        <div class="field"><label>Pour temp (°C)</label><input type="number" id="pPour" value="${b.pourTemp||""}" step="0.5"></div>
+        <div class="field"><label>Mold</label><input type="text" id="pMold" value="${escapeHtml(b.mold||"")}"></div>
+      </div>
+      <p class="footnote" id="methodNote">${METHOD_NOTES[b.method || METHODS[0]]}</p>
+      <div class="row" style="margin-top:12px;">
+        <div class="field"><label>Unmold date</label><input type="date" id="pUnmold" value="${b.unmoldDate||""}"></div>
+        <div class="field"><label>Cure start date</label><input type="date" id="pCureStart" value="${b.cureStartDate||""}"></div>
+        <div class="field"><label>Cure length (days)</label><input type="number" id="pCureDays" value="${b.cureDays||42}" min="1"></div>
+        <div class="field"><label>Predicted ready</label><input type="text" value="${cureReady}" disabled></div>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <h2>Lye temperature log</h2>
+        <div class="tbl-wrap"><table><thead><tr><th>Time</th><th>°C</th><th></th></tr></thead><tbody id="lyeTempBody"></tbody></table></div>
+        <div class="log-add-row">
+          <input type="time" id="lyeTempTime" value="${nowTime()}">
+          <input type="number" id="lyeTempVal" placeholder="°C" step="0.5" style="width:80px">
+          <button class="btn secondary small" id="addLyeTemp">+ add reading</button>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Oil temperature log</h2>
+        <div class="tbl-wrap"><table><thead><tr><th>Time</th><th>°C</th><th></th></tr></thead><tbody id="oilTempBody"></tbody></table></div>
+        <div class="log-add-row">
+          <input type="time" id="oilTempTime" value="${nowTime()}">
+          <input type="number" id="oilTempVal" placeholder="°C" step="0.5" style="width:80px">
+          <button class="btn secondary small" id="addOilTemp">+ add reading</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Notes</h2>
+      <textarea id="pNotes" rows="4" style="width:100%; font-family:var(--font-body); font-size:14px; padding:9px; border:1px solid var(--line); background:var(--paper); color:var(--ink);">${escapeHtml(b.notes||"")}</textarea>
+    </div>
+  `;
+
+  renderTempTable("lyeTempBody", b.lyeTemps, b, "lyeTemps");
+  renderTempTable("oilTempBody", b.oilTemps, b, "oilTemps");
+
+  ["pStatus","pMethod","pTrace","pPour","pMold","pUnmold","pCureStart","pCureDays","pNotes"].forEach(id=>{
+    document.getElementById(id).addEventListener("input", ()=>saveProcessFields(b));
+    document.getElementById(id).addEventListener("change", ()=>saveProcessFields(b));
+  });
+  document.getElementById("pMethod").addEventListener("change", (e)=>{
+    document.getElementById("methodNote").textContent = METHOD_NOTES[e.target.value];
+  });
+  document.getElementById("addLyeTemp").addEventListener("click", ()=>{
+    const t = document.getElementById("lyeTempTime").value, v = parseFloat(document.getElementById("lyeTempVal").value);
+    if(isNaN(v)) return;
+    b.lyeTemps.push({time:t, temp:v});
+    persistBatches();
+    renderTempTable("lyeTempBody", b.lyeTemps, b, "lyeTemps");
+  });
+  document.getElementById("addOilTemp").addEventListener("click", ()=>{
+    const t = document.getElementById("oilTempTime").value, v = parseFloat(document.getElementById("oilTempVal").value);
+    if(isNaN(v)) return;
+    b.oilTemps.push({time:t, temp:v});
+    persistBatches();
+    renderTempTable("oilTempBody", b.oilTemps, b, "oilTemps");
+  });
+}
+
+function renderTempTable(bodyId, arr, batch, field){
+  const tbody = document.getElementById(bodyId);
+  tbody.innerHTML = arr.length ? arr.map((r,idx)=>`<tr><td>${r.time}</td><td class="num">${fmt(r.temp,1)}</td><td><button class="btn secondary small" data-idx="${idx}">remove</button></td></tr>`).join("") : `<tr><td colspan="3" class="empty">no readings yet</td></tr>`;
+  tbody.querySelectorAll("[data-idx]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      arr.splice(parseInt(btn.dataset.idx,10),1);
+      persistBatches();
+      renderTempTable(bodyId, arr, batch, field);
+    });
+  });
+}
+
+function saveProcessFields(b){
+  b.status = document.getElementById("pStatus").value;
+  b.method = document.getElementById("pMethod").value;
+  b.traceTime = document.getElementById("pTrace").value;
+  b.pourTemp = document.getElementById("pPour").value;
+  b.mold = document.getElementById("pMold").value;
+  b.unmoldDate = document.getElementById("pUnmold").value;
+  b.cureStartDate = document.getElementById("pCureStart").value;
+  b.cureDays = document.getElementById("pCureDays").value;
+  b.notes = document.getElementById("pNotes").value;
+  persistBatches();
+  renderBatchList();
+}
+
+function nowTime(){ const d=new Date(); return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0"); }
+function addDays(dateStr, days){
+  if(!dateStr) return "–";
+  const d = new Date(dateStr+"T00:00:00");
+  if(isNaN(d)) return "–";
+  d.setDate(d.getDate()+ (days||0));
+  return d.toISOString().slice(0,10);
+}
+
+// ---------- batches list ----------
+function renderBatchList(){
+  const box = document.getElementById("batchList");
+  if(batches.length===0){ box.innerHTML = `<p class="empty">No batches saved yet — build a recipe and save it from the Recipe tab.</p>`; updateStatStrip(); return; }
+  box.innerHTML = batches.map(b=>{
+    const cost = b.computed && b.computed.grandTotal ? fmt(b.computed.grandTotal,2) : "–";
+    const cureReady = addDays(b.cureStartDate, parseInt(b.cureDays||42,10));
+    return `<div class="batch-card">
+      <h3>${escapeHtml(b.name)}</h3>
+      <div class="batch-meta">${b.date} &middot; status: ${b.status} &middot; batch cost ${cost} &middot; cure ready ${cureReady}</div>
+      <button class="btn secondary small" data-load="${b.id}">load into recipe</button>
+      <button class="btn secondary small" data-log="${b.id}">open process log</button>
+      <button class="btn warn small" data-del="${b.id}">delete</button>
+    </div>`;
+  }).join("");
+  box.querySelectorAll("[data-load]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const b = batches.find(x=>x.id===btn.dataset.load);
+      if(!b) return;
+      recipeBlend = JSON.parse(JSON.stringify(b.blend));
+      document.getElementById("totalOilWeight").value = b.settings.totalOilWeight;
+      document.getElementById("superfat").value = b.settings.superfat;
+      document.getElementById("lyeType").value = b.settings.lyeType;
+      document.getElementById("lyeConc").value = b.settings.lyeConc;
+      document.getElementById("numBars").value = b.settings.numBars;
+      document.getElementById("eoRate").value = b.settings.eoRate;
+      document.getElementById("liquidType").value = b.settings.liquidType || "water";
+      document.getElementById("schoolSupplied").value = b.settings.schoolSupplied || "yes";
+      document.querySelector('[data-tab="recipe"]').click();
+      refreshOilPickers();
+      document.getElementById("eoPicker").value = b.settings.eoId || "";
+      renderRecipe();
+    });
+  });
+  box.querySelectorAll("[data-log]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      document.querySelector('[data-tab="process"]').click();
+      document.getElementById("processBatchPicker").value = btn.dataset.log;
+      renderProcessDetail(btn.dataset.log);
+    });
+  });
+  box.querySelectorAll("[data-del]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      if(!confirm("Delete this batch and its process log?")) return;
+      batches = batches.filter(x=>x.id!==btn.dataset.del);
+      persistBatches();
+      renderBatchList();
+    });
+  });
+  updateStatStrip();
+}
+
+function updateStatStrip(){
+  const strip = document.getElementById("statStrip");
+  const activeCuring = batches.filter(b=>b.status==="curing").length;
+  strip.innerHTML = `
+    <div><b>${ingredients.length}</b>ingredients tracked</div>
+    <div><b>${batches.length}</b>batches saved</div>
+    <div><b>${activeCuring}</b>currently curing</div>
+  `;
+}
+
+// ---------- init ----------
+document.getElementById("newBatchDate").value = new Date().toISOString().slice(0,10);
+renderIngredientTable();
+refreshOilPickers();
+renderRecipe();
+renderProcessTab();
+renderBatchList();
+
+})();
+</script>
+</body>
+</html>
